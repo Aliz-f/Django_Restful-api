@@ -2,6 +2,7 @@ from django.db.models.query import QuerySet
 from django.http.response import HttpResponse
 from django.shortcuts import render
 from rest_framework import serializers
+from rest_framework import authentication
 
 # from django.http import HttpResponse, JsonResponse, response #***Mehtod 1
 # from rest_framework import serializers #***Method 1
@@ -18,6 +19,9 @@ from rest_framework.views import APIView #***Method 3
 from rest_framework import generics#***Method 4
 from rest_framework import mixins #***Method 4
 
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication #***For Authentication
+from rest_framework.permissions import IsAuthenticated #***For Authentication
+
 from .serializers import ArticleSerializers
 from .models import Article
 
@@ -29,6 +33,9 @@ mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin):
     serializer_class = ArticleSerializers
     queryset = Article.objects.all()
     lookup_field = 'id'
+
+    authentication_classes = [SessionAuthentication, BasicAuthentication] #***For Authentication -> first session auth, second basic auth
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, id=None):
         if id:
@@ -44,10 +51,6 @@ mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin):
 
     def delete(self, request, id = None):
         return self.destroy(request, id)
-
-
-
-
 
 
 # #***Method 3: Use class method for api (APIView)
