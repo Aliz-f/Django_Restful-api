@@ -1,3 +1,4 @@
+from django.db.models import query
 from django.db.models.query import QuerySet
 from django.http.response import HttpResponse
 from django.shortcuts import render
@@ -22,35 +23,70 @@ from rest_framework import mixins #***Method 4
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication #***For Authentication
 from rest_framework.permissions import IsAuthenticated #***For Authentication
 
+from rest_framework import viewsets #***Method 5
+from django.shortcuts import get_object_or_404
+
 from .serializers import ArticleSerializers
 from .models import Article
 
 # Create your views here.
-
-#***Method 4 : Use generic view and mixins 
-class ArticleGenericAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin,
-mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin):
-    serializer_class = ArticleSerializers
-    queryset = Article.objects.all()
-    lookup_field = 'id'
-
+#***Mehtod 5 : use viewset for views 
+class ArticleViewSet(viewsets.ViewSet):
+    
     authentication_classes = [SessionAuthentication, BasicAuthentication] #***For Authentication -> first session auth, second basic auth
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, id=None):
-        if id:
-            return self.retrieve(request, id)
-        else:
-            return self.list(request)
+    def list(self, request):
+        article = Article.objects.all()
+        serializer = ArticleSerializers(article, many = True)
+        return Response(serializer.data)
     
-    def post(self, request):
-        return self.create(request)
-    
-    def put(self, request, id = None):
-        return self.update(request, id)
+    def create(self, request):
+        serializer = ArticleSerializers(data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status = status.HTTP_201_CREATED)
+        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, id = None):
-        return self.destroy(request, id)
+    def retrieve (self, request, pk = None):
+        queryset = Article.objects.all()
+        article = get_object_or_404(queryset, pk = pk)
+        serializer = ArticleSerializers(article)
+        return Response(serializer.data)
+
+    def update(self, request, pk):
+        article = Article.objects.get(pk = pk)
+        serializer = ArticleSerializers(article, data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response (serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+
+
+#***Method 4 : Use generic view and mixins 
+# class ArticleGenericAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin,
+# mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin):
+#     serializer_class = ArticleSerializers
+#     queryset = Article.objects.all()
+#     lookup_field = 'id'
+
+#     authentication_classes = [SessionAuthentication, BasicAuthentication] #***For Authentication -> first session auth, second basic auth
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request, id=None):
+#         if id:
+#             return self.retrieve(request, id)
+#         else:
+#             return self.list(request)
+    
+#     def post(self, request):
+#         return self.create(request)
+    
+#     def put(self, request, id = None):
+#         return self.update(request, id)
+
+#     def delete(self, request, id = None):
+#         return self.destroy(request, id)
 
 
 # #***Method 3: Use class method for api (APIView)
