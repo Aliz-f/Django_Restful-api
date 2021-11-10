@@ -30,37 +30,47 @@ from .serializers import ArticleSerializers
 from .models import Article
 
 # Create your views here.
-#***Mehtod 5 : use viewset for views 
-class ArticleViewSet(viewsets.ViewSet):
+#***Method 6 : use GenericViewSet fro views
+class ArticleGenericViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin,
+                            mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     
+    serializer_class = ArticleSerializers
+    queryset = Article.objects.all()
     authentication_classes = [SessionAuthentication, BasicAuthentication] #***For Authentication -> first session auth, second basic auth
     permission_classes = [IsAuthenticated]
 
-    def list(self, request):
-        article = Article.objects.all()
-        serializer = ArticleSerializers(article, many = True)
-        return Response(serializer.data)
+
+#***Mehtod 5 : use viewset for views 
+# class ArticleViewSet(viewsets.ViewSet):
     
-    def create(self, request):
-        serializer = ArticleSerializers(data = request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status = status.HTTP_201_CREATED)
-        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+#     authentication_classes = [SessionAuthentication, BasicAuthentication] #***For Authentication -> first session auth, second basic auth
+#     permission_classes = [IsAuthenticated]
 
-    def retrieve (self, request, pk = None):
-        queryset = Article.objects.all()
-        article = get_object_or_404(queryset, pk = pk)
-        serializer = ArticleSerializers(article)
-        return Response(serializer.data)
+#     def list(self, request):
+#         article = Article.objects.all()
+#         serializer = ArticleSerializers(article, many = True)
+#         return Response(serializer.data)
+    
+#     def create(self, request):
+#         serializer = ArticleSerializers(data = request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status = status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
-    def update(self, request, pk):
-        article = Article.objects.get(pk = pk)
-        serializer = ArticleSerializers(article, data = request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response (serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+#     def retrieve (self, request, pk = None):
+#         queryset = Article.objects.all()
+#         article = get_object_or_404(queryset, pk = pk)
+#         serializer = ArticleSerializers(article)
+#         return Response(serializer.data)
+
+#     def update(self, request, pk):
+#         article = Article.objects.get(pk = pk)
+#         serializer = ArticleSerializers(article, data = request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data)
+#         return Response (serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
 
 #***Method 4 : Use generic view and mixins 
