@@ -14,7 +14,6 @@ from rest_framework import authentication
 from rest_framework.response import Response #***Method 2 and Method 3
 from rest_framework import status #***Method 2 and Method 3
 from rest_framework.serializers import Serializer #***Method 2 and Method 3
-
 from rest_framework.views import APIView #***Method 3
 
 from rest_framework import generics#***Method 4
